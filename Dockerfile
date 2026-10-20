@@ -57,6 +57,7 @@ LABEL org.opencontainers.image.title="${TITLE}" \
 # image: it is unused attack surface and the source of every HIGH finding in
 # the CI Trivy scan (vulnerable copies of brace-expansion, picomatch, etc.).
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
+  && apk add --no-cache tini \
   && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 WORKDIR /app
@@ -87,4 +88,10 @@ ENV DB_PATH=/data/scout-off.db \
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD wget -qO- http://localhost:4000/health/liveness || exit 1
 
+# Run Node under tini so signals are forwarded correctly and zombie child
+# processes are reaped (Node as PID 1 does neither by default). Graceful
+# shutdown still works: `docker stop` sends SIGTERM to tini, which forwards
+# it to Node, triggering the "Received SIGTERM, starting graceful
+# shutdown..." sequence in src/index.ts.
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "dist/index.js"]

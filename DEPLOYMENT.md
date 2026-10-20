@@ -864,6 +864,10 @@ healthcheck:
 
 Docker marks the container `(healthy)` once the first probe succeeds. The `start_period` of 15 seconds gives the Express server time to initialize before probes are counted as failures. The `--spider` flag tells `wget` to perform a HEAD-only request without downloading the response body, keeping healthcheck logs quiet. Run `docker compose ps` to confirm the container status shows `(healthy)` after startup.
 
+### Init Process (tini)
+
+The runtime image runs Node under [tini](https://github.com/krallin/tini) (`ENTRYPOINT ["/sbin/tini", "--"]`). Node as PID 1 neither reaps zombie child processes nor gets default signal behaviour, so tini handles signal forwarding and zombie reaping. Graceful shutdown is preserved: `docker stop` sends SIGTERM to tini, which forwards it to Node and triggers the graceful shutdown sequence (`"Received SIGTERM, starting graceful shutdown..."`). If you run the image without its built-in entrypoint, use `docker run --init` or equivalent instead.
+
 ## Multi-Sig Admin Operations
 
 High-value admin operations (withdraw fees, pause/unpause contract) require M-of-N multi-signature approval:
