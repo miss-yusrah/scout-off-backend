@@ -36,7 +36,7 @@ FROM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18
 
 # Build arguments for OCI annotations and runtime environment
 ARG GIT_COMMIT=unknown
-ARG VERSION=1.0.0
+ARG VERSION=0.0.0-dev
 ARG BUILD_DATE=""
 ARG SOURCE=https://github.com/scout-off/scout-off-backend
 ARG TITLE="scout-off-backend"
